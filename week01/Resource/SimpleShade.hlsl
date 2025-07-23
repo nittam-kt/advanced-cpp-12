@@ -67,7 +67,7 @@ float4 EvaluateLight(in GPULight L, in float3 posW, in float3 nrmW)
 
     Ldir = -L.posOrDirWS; // store as -dir in posOrDirWS
 
-    float NdotL = 0.5f;
+    float NdotL = dot(Ldir, nrmW);
     return L.color * saturate(NdotL);
 }
 

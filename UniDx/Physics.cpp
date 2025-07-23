@@ -1,4 +1,7 @@
 ﻿#include "Physics.h"
+
+#include <algorithm>
+
 #include "Collider.h"
 #include "Rigidbody.h"
 
@@ -13,6 +16,68 @@ void PhysicsShape::initialize(Collider* collider)
 {
     collider_ = collider;
     // moveBounds
+}
+
+// 衝突対象の新旧を調べて OnTrigger～, OnCollidion～ を呼ぶ
+void PhysicsShape::collideCallback()
+{
+    // トリガーコールバック
+    for (auto other : othersNew_)
+    {
+        auto inOld = std::ranges::find(others_, other);
+        if (inOld == others_.end())
+        {
+            // 以前のリストに含まれていない＝新規
+            getCollider()->gameObject->onTriggerEnter(other);
+        }
+        else
+        {
+            // 以前のリストに含まれていれば、一旦削除
+            others_.erase(inOld);
+        }
+
+        // 新しいほうに含まれているので、Stay
+        getCollider()->gameObject->onTriggerStay(other);
+    }
+
+    // 新しいリストになくて古いほうに残っている=離れた
+    for (auto other : others_)
+    {
+        getCollider()->gameObject->onTriggerExit(other);
+    }
+
+    // 古いほうを削除して新しいほうを古いほうに
+    others_.clear();
+    std::swap(others_, othersNew_);
+
+    // 衝突コールバック
+    for (const auto& collision : collisionsNew_)
+    {
+        const auto& inOld = std::ranges::find_if(collisions_, [collision](auto i) {return i.collider == collision.collider; });
+        if (inOld == collisions_.end())
+        {
+        // 以前のリストに含まれていない＝新規
+            getCollider()->gameObject->onCollisionEnter(collision);
+        }
+        else
+        {
+        // 以前のリストに含まれていれば、一旦削除
+            collisions_.erase(inOld);
+        }
+
+        // 新しいほうに含まれているので、Stay
+        getCollider()->gameObject->onCollisionStay(collision);
+    }
+
+    // 新しいリストになくて古いほうに残っている=離れた
+    for (auto col : collisions_)
+    {
+        getCollider()->gameObject->onCollisionExit(col);
+    }
+
+    // 古いほうを削除して新しいほうを古いほうに
+    collisions_.clear();
+    std::swap(collisions_, collisionsNew_);
 }
 
 
@@ -111,6 +176,7 @@ void Physics::initializeSimulate(float step)
         }
     }
 
+    // 無効になっているシェイプを削除
     for (vector<PhysicsShape>::iterator it = physicsShapes.begin(); it != physicsShapes.end();)
     {
         if (!it->isValid())
@@ -129,9 +195,11 @@ void Physics::initializeSimulate(float step)
         act.getRigidbody()->physicsUpdate();
     }
 
-    // Shapeの移動Boundsを更新
+    // Shapeの移動Boundsと次に当たるコライダーを初期化を更新
     for (auto& shape : physicsShapes)
     {
+        shape.initOtherNew();
+
         Bounds bounds = shape.getCollider()->getBounds();
         auto rb = shape.getCollider()->attachedRigidbody;
         if (rb != nullptr)
@@ -151,6 +219,7 @@ void Physics::simulatePositionCorrection(float step)
 
     // まずは当たりそうなペアをAABBで判定して抽出
     potentialPairs.clear();
+    potentialPairsTrigger.clear();
     for (size_t i = 0; i < physicsShapes.size(); ++i)
     {
         for (size_t j = i + 1; j < physicsShapes.size(); ++j)
@@ -163,7 +232,16 @@ void Physics::simulatePositionCorrection(float step)
                 if (rbA && rbA == rbB) continue;
 
                 // ペアを記憶
-                potentialPairs.push_back({ &physicsShapes[i], &physicsShapes[j] });
+                if (physicsShapes[i].getCollider()->isTrigger || physicsShapes[j].getCollider()->isTrigger)
+                {
+                    // トリガー
+                    potentialPairsTrigger.push_back({ &physicsShapes[i], &physicsShapes[j] });
+                }
+                else
+                {
+                    // コリジョン
+                    potentialPairs.push_back({ &physicsShapes[i], &physicsShapes[j] });
+                }
             }
         }
     }
@@ -174,16 +252,42 @@ void Physics::simulatePositionCorrection(float step)
         act.getRigidbody()->applyMove(step);
     }
 
+    // トリガーチェックする
+    for (auto& pair : potentialPairsTrigger)
+    {
+        if (pair.a->getCollider()->checkTrigger(pair.b->getCollider()))
+        {
+            pair.a->addTrigger(pair.b->getCollider());
+            pair.b->addTrigger(pair.a->getCollider());
+        }
+    }
+
     // 衝突をチェックする
     for (auto& pair : potentialPairs)
     {
-        pair.a->getCollider()->checkIntersect(pair.b->getCollider());
+        if(pair.a->getCollider()->checkIntersect(pair.b->getCollider()))
+        {
+            Collision ca;
+            ca.collider = pair.b->getCollider();
+            pair.a->addCollide(ca);
+
+            Collision cb;
+            cb.collider = pair.a->getCollider();
+            pair.b->addCollide(cb);
+        }
     }
 
     // 衝突で生じた補正を含めて位置と速度を解決する
     for (auto& act : physicsActors)
     {
         act.getRigidbody()->solveCorrection();
+    }
+
+    // OnTrigger～, OnCollision～等のコールバックを呼び出す
+    // TODO: 当たったRigidbodyがついているGameObjectでも呼び出す
+    for (auto& shape : physicsShapes)
+    {
+        shape.collideCallback();
     }
 }
 

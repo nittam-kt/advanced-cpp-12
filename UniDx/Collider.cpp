@@ -16,6 +16,27 @@ using namespace std;
 constexpr float infinity = numeric_limits<float>::infinity();
 
 
+// トリガーチェック
+bool checkTrigger_(SphereCollider* sphere, AABBCollider* aabb)
+{
+    // 球の中心（ワールド座標）
+    Vector3 sphereCenter = sphere->transform->TransformPoint(sphere->center);
+    float sphereRadius = sphere->radius;
+
+    // AABBのBounds
+    Bounds aabbBounds = aabb->getBounds();
+
+    // AABB上で球中心に最も近い点
+    Vector3 closest = aabbBounds.ClosestPoint(sphereCenter);
+
+    // 最近点と球中心のベクトル
+    Vector3 normal = sphereCenter - closest;
+    float distSqr = normal.LengthSquared();
+
+    // 衝突していない
+    return distSqr <= sphereRadius * sphereRadius;
+}
+
 // 衝突していれば attachedRigidbody に addCorrectPosition(), addCorrectVelocity() で補正する
 bool checkIntersect_(SphereCollider* sphere, AABBCollider* aabb)
 {
@@ -42,8 +63,8 @@ bool checkIntersect_(SphereCollider* sphere, AABBCollider* aabb)
     Rigidbody* rbB = aabb->attachedRigidbody;
 
     // 相対速度
-    Vector3 velA = rbA ? rbA->velocity : Vector3::Zero;
-    Vector3 velB = rbB ? rbB->velocity : Vector3::Zero;
+    Vector3 velA = rbA ? rbA->linearVelocity : Vector3::Zero;
+    Vector3 velB = rbB ? rbB->linearVelocity : Vector3::Zero;
     Vector3 relVel = velA - velB;
 
     // 相対速度が法線方向（離れようとしている）場合は無視
@@ -74,13 +95,13 @@ bool checkIntersect_(SphereCollider* sphere, AABBCollider* aabb)
     if (rbB && !rbB->isKinematic && massB != infinity) rbB->addCorrectPosition(correctionB);
 
     // 跳ね返り係数
-    constexpr float restitution = 1.0f;
+    float bounce = sphere->bounciness * aabb->bounciness;
 
     // 法線方向の速度成分
     float relVelN = relVel.Dot(contactNormal);
 
     // 反射させる
-    Vector3 impulse = -(1.0f + restitution) * relVelN * contactNormal;
+    Vector3 impulse = -(1.0f + bounce) * relVelN * contactNormal;
 
     if (rbA && !rbA->isKinematic && massA != infinity) rbA->addCorrectVelocity(impulse * massBPerTotal);
     if (rbB && !rbB->isKinematic && massB != infinity) rbB->addCorrectVelocity(-impulse * massAPerTotal);
@@ -130,6 +151,20 @@ Bounds AABBCollider::getBounds() const
 }
 
 
+// トリガーチェック
+bool AABBCollider::checkTrigger(AABBCollider* other)
+{
+    return getBounds().Intersects(other->getBounds());
+}
+
+
+// トリガーチェック
+bool AABBCollider::checkTrigger(SphereCollider* other)
+{
+    return checkTrigger_(other, this);
+}
+
+
 // 衝突チェック
 // 衝突していれば attachedRigidbody に addCorrectPosition(), addCorrectVelocity() で補正する
 bool AABBCollider::checkIntersect(AABBCollider* other)
@@ -143,6 +178,25 @@ bool AABBCollider::checkIntersect(AABBCollider* other)
 bool AABBCollider::checkIntersect(SphereCollider* other)
 {
     return checkIntersect_(other, this);
+}
+
+
+// トリガーチェック
+bool SphereCollider::checkTrigger(AABBCollider* other)
+{
+    return checkTrigger_(this, other);
+}
+
+
+// トリガーチェック
+bool SphereCollider::checkTrigger(SphereCollider* other)
+{
+    Vector3 centerA = transform->TransformPoint(center);
+    Vector3 centerB = other->transform->TransformPoint(other->center);
+    float radiusAB = radius + other->radius;
+
+    // 中心距離が半径の合計より離れていれば当たっていない
+    return Vector3::DistanceSquared(centerA, centerB) <= radiusAB * radiusAB;
 }
 
 
@@ -187,10 +241,10 @@ bool SphereCollider::checkIntersect(SphereCollider* other)
     attachedRigidbody->addCorrectPosition(addA);
 
     // 跳ね返り計算
-    Vector3 va = attachedRigidbody->velocity;
-    Vector3 vb = other->attachedRigidbody->velocity;
+    Vector3 va = attachedRigidbody->linearVelocity;
+    Vector3 vb = other->attachedRigidbody->linearVelocity;
 
-    // Aの跳ね返り
+    // 相対速度
     Vector3 relV = va - vb;
 
     Vector3 normal = sub;
@@ -200,9 +254,12 @@ bool SphereCollider::checkIntersect(SphereCollider* other)
         return false;
     }
 
+    // 跳ね返り係数
+    float bounce = bounciness * other->bounciness;
+
     Vector3 relVNormal = normal * relV.Dot(normal);
-    attachedRigidbody->addCorrectVelocity(-relVNormal);
-    other->attachedRigidbody->addCorrectVelocity(relVNormal);
+    attachedRigidbody->addCorrectVelocity(relVNormal * -bounce);
+    other->attachedRigidbody->addCorrectVelocity(relVNormal * bounce);
 
     return false;
 }

@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "Material.h"
+#include "SceneManager.h"
 #include "Debug.h"
 
 namespace UniDx{
@@ -64,13 +65,16 @@ void Renderer::updatePositionCameraCBuffer(const UniDx::Camera& camera) const
 // -----------------------------------------------------------------------------
 void Renderer::setShaderForRender() const
 {
+    if (materials.size() == 0)
+    {
+//        SceneManager::instance->GetDefaultMaterial()->setForRender();
+    }
     for(auto& material : materials)
     {
         material->setForRender();
-
-        ID3D11Buffer* cbs[1] = { constantBuffer0.Get() };
-        D3DManager::instance->GetContext()->VSSetConstantBuffers(0, 1, cbs);
     }
+    ID3D11Buffer* cbs[1] = { constantBuffer0.Get() };
+    D3DManager::instance->GetContext()->VSSetConstantBuffers(0, 1, cbs);
 }
 
 

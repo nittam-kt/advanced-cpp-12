@@ -19,6 +19,10 @@ class Collider : public Component
 {
 public:
     Rigidbody* attachedRigidbody = nullptr;
+    bool isTrigger = false;
+
+    // 物理マテリアル
+    float bounciness = 0.75f;
 
     virtual void OnEnable() override
     {
@@ -33,6 +37,11 @@ public:
 
     // ワールド空間における空間境界を取得
     virtual Bounds getBounds() const = 0;
+
+    // トリガーチェック
+    virtual bool checkTrigger(Collider* other) = 0;
+    virtual bool checkTrigger(SphereCollider* other) = 0;
+    virtual bool checkTrigger(AABBCollider* other) = 0;
 
     // 衝突チェック
     // 衝突していれば attachedRigidbody に addCorrectPosition(), addCorrectVelocity() で補正する
@@ -59,6 +68,11 @@ public:
     // ワールド空間における空間境界を取得
     virtual Bounds getBounds() const override;
 
+    // トリガーチェック
+    virtual bool checkTrigger(Collider* other) { return other->checkTrigger(this); };
+    virtual bool checkTrigger(SphereCollider* other);
+    virtual bool checkTrigger(AABBCollider* other);
+
     // 衝突チェック
     // 衝突していれば attachedRigidbody に addCorrectPosition(), addCorrectVelocity() で補正する
     virtual bool checkIntersect(Collider* other) { return other->checkIntersect(this); }
@@ -80,6 +94,11 @@ public:
 
     // ワールド空間における空間境界を取得
     virtual Bounds getBounds() const override;
+
+    // トリガーチェック
+    virtual bool checkTrigger(Collider* other) { return other->checkTrigger(this); };
+    virtual bool checkTrigger(SphereCollider* other);
+    virtual bool checkTrigger(AABBCollider* other);
 
     // 衝突チェック
     // 衝突していれば attachedRigidbody に addCorrectPosition(), addCorrectVelocity() で補正する

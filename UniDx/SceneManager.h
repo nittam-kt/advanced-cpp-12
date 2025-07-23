@@ -3,11 +3,9 @@
 #include <memory>
 
 #include "Singleton.h"
+#include "Scene.h"
+#include "Material.h"
 
-namespace UniDx
-{
-class Scene;
-}
 
 std::unique_ptr<UniDx::Scene> CreateDefaultScene();
 
@@ -21,12 +19,13 @@ class Scene;
 class SceneManager : public Singleton<SceneManager>
 {
 public:
-    void createScene() { activeScene = std::move(CreateDefaultScene()); }
+    void createScene();
 
     Scene* GetActiveScene() { return activeScene.get(); }
 
 protected:
     std::unique_ptr<Scene> activeScene;
+//    std::unique_ptr<Material> defaultMaterial;
 };
 
 }

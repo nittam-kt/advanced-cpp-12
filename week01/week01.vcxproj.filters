@@ -201,12 +201,6 @@
     <ClInclude Include="..\UniDx\GameObject.h">
       <Filter>UniDx</Filter>
     </ClInclude>
-    <ClInclude Include="source\TestRenderer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="source\TestCameraBehaviour.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="..\UniDx\Mesh.h">
       <Filter>UniDx</Filter>
     </ClInclude>
@@ -224,9 +218,6 @@
     </ClInclude>
     <ClInclude Include="..\tinygltf\tiny_gltf.h">
       <Filter>tinygltf</Filter>
-    </ClInclude>
-    <ClInclude Include="..\UniDx\GltfRenderer.h">
-      <Filter>UniDx</Filter>
     </ClInclude>
     <ClInclude Include="..\UniDx\Material.h">
       <Filter>UniDx</Filter>
@@ -261,6 +252,18 @@
     <ClInclude Include="..\UniDx\LightManager.h">
       <Filter>UniDx</Filter>
     </ClInclude>
+    <ClInclude Include="..\UniDx\Collision.h">
+      <Filter>UniDx</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CameraBehaviour.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UniDx\GltfModel.h">
+      <Filter>UniDx</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\UniDx\Shader.cpp">
@@ -284,17 +287,11 @@
     <ClCompile Include="..\UniDx\Camera.cpp">
       <Filter>UniDx</Filter>
     </ClCompile>
-    <ClCompile Include="source\TestRenderer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="..\UniDx\Renderer.cpp">
       <Filter>UniDx</Filter>
     </ClCompile>
     <ClCompile Include="..\UniDx\Texture.cpp">
       <Filter>UniDx</Filter>
-    </ClCompile>
-    <ClCompile Include="source\TestCameraBehaviour.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="..\UniDX\Engine.cpp">
       <Filter>UniDx</Filter>
@@ -310,9 +307,6 @@
     </ClCompile>
     <ClCompile Include="..\tinygltf\tiny_gltf.cc">
       <Filter>tinygltf</Filter>
-    </ClCompile>
-    <ClCompile Include="..\UniDx\GltfRenderer.cpp">
-      <Filter>UniDx</Filter>
     </ClCompile>
     <ClCompile Include="..\UniDx\UniDx.cpp">
       <Filter>UniDx</Filter>
@@ -333,6 +327,21 @@
       <Filter>UniDx</Filter>
     </ClCompile>
     <ClCompile Include="..\UniDx\Light.cpp">
+      <Filter>UniDx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UniDx\GameObject.cpp">
+      <Filter>UniDx</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CameraBehaviour.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UniDx\GltfModel.cpp">
+      <Filter>UniDx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\UniDx\SceneManager.cpp">
       <Filter>UniDx</Filter>
     </ClCompile>
   </ItemGroup>
@@ -357,6 +366,24 @@
     <Image Include="Resource\Albedo.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="Resource\brick-1.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="Resource\brick-2.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="Resource\wall-1.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="Resource\wall-2.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="Resource\wood-1.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+    <Image Include="Resource\wood-2.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\UniDx\SpriteShader.hlsl">
@@ -371,6 +398,9 @@
     <FxCompile Include="Resource\SimpleShade.hlsl">
       <Filter>リソース ファイル</Filter>
     </FxCompile>
+    <FxCompile Include="..\UniDx\DefaultShade.hlsl">
+      <Filter>UniDx</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\DirectXTK\include\SimpleMath.inl">
@@ -383,6 +413,9 @@
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="Resource\ModularCharacter.glb">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="Resource\ModularCharacterPBR.glb">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>

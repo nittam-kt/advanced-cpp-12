@@ -20,8 +20,11 @@ public:
     // 位置。値を直接設定するとテレポートする。
     Property<Vector3> position;
 
+    // 向き
+    Property<Quaternion> rotation;
+
     // 速度
-    Vector3 velocity{ 0, 0, 0 };
+    Vector3 linearVelocity{ 0, 0, 0 };
 
     // 重力スケール（1.0fで標準重力、0で無重力、負値で逆重力）
     float gravityScale = 1.0f;
@@ -35,6 +38,10 @@ public:
         position(
             [this]() { return position_; },
             [this](const Vector3& v) { position_ = v; move_ = Vector3::Zero; hasMovePos_ = true; }
+        ),
+        rotation(
+            [this]() { return rotation_; },
+            [this](const Quaternion& q) { rotation_ = q; hasMoveRot_ = true; }
         )
     {
     }
@@ -62,6 +69,14 @@ public:
         hasMovePos_ = true;
     }
 
+    // 姿勢を指定。補間が有効な場合は間の衝突判定を行う。
+    void MoveRotation(const Quaternion& rot)
+    {
+        // TODO:補間は未実装
+        rotation_ = rot;
+        hasMoveRot_ = true;
+    }
+
     // ステップ時間を指定して移動ベクトルを取得
     Vector3 getMoveVector(float step) { return move_ * (Time::fixedDeltaTime > 0 ? step / Time::fixedDeltaTime : 1); }
 
@@ -74,13 +89,13 @@ public:
         // 重力適用
         if (gravityScale != 0.0f)
         {
-            velocity.y += Physics::gravity * gravityScale * Time::fixedDeltaTime;
+            linearVelocity.y += Physics::gravity * gravityScale * Time::fixedDeltaTime;
         }
 
         // 位置の直接指定がなければ、移動ベクトルに速度を入れる
         if (!hasMovePos_)
         {
-            move_ = velocity * Time::fixedDeltaTime;
+            move_ = linearVelocity * Time::fixedDeltaTime;
         }
     }
 
@@ -91,6 +106,7 @@ public:
 
         move_ = Vector3::Zero;
         hasMovePos_ = false;
+        hasMoveRot_ = false;
     }
 
     // 位置と速度の補正を適用してTransformに反映
@@ -102,13 +118,14 @@ public:
         correctPositionBounds.Center = Vector3::Zero;
         correctPositionBounds.Extents = Vector3::Zero;
 
-        velocity += correctVelocityBounds.min();
-        velocity += correctVelocityBounds.max();
+        linearVelocity += correctVelocityBounds.min();
+        linearVelocity += correctVelocityBounds.max();
         correctVelocityBounds.Center = Vector3::Zero;
         correctVelocityBounds.Extents = Vector3::Zero;
 
-        // Transformに位置を反映
+        // Transformに位置と姿勢を反映
         transform->position = position_;
+        transform->rotation = rotation_;
     }
 
     // 位置を補正する差分ベクトルを登録
@@ -125,11 +142,13 @@ public:
 
 private:
     Vector3 position_;
+    Quaternion rotation_;
     Vector3 move_{ 0, 0, 0 };
     Bounds correctPositionBounds;
     Bounds correctVelocityBounds;
 
     bool hasMovePos_ = false;
+    bool hasMoveRot_ = false;
 };
 
 

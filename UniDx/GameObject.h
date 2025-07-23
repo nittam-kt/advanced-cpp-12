@@ -6,14 +6,16 @@
 #include <DirectXMath.h>
 
 #include "Object.h"
+#include "Collision.h"
 
 namespace UniDx {
+
 
 // 前方宣言
 class Component;
 class Behaviour;
 class Transform;
-
+class Collider;
 
 
 // --------------------
@@ -82,7 +84,13 @@ public:
     }
 
     void SetName(const wstring& n) { name_ = n; }
-    const wstring& GetName() const { return wstring(name); }
+
+    virtual void onTriggerEnter(Collider* other);
+    virtual void onTriggerStay(Collider* other);
+    virtual void onTriggerExit(Collider* other);
+    virtual void onCollisionEnter(const Collision& collision);
+    virtual void onCollisionStay(const Collision& collision);
+    virtual void onCollisionExit(const Collision& collision);
 
 protected:
     wstring name_;

@@ -16,6 +16,8 @@ using Microsoft::WRL::ComPtr;
 using DirectX::SimpleMath::Vector3;
 using DirectX::SimpleMath::Vector2;
 using DirectX::SimpleMath::Color;
+using DirectX::XM_PI;
+using DirectX::XM_2PI;
 
 class Object;
 class GameObject;

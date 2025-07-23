@@ -40,7 +40,7 @@ public:
     static void SetParent(GameObjectPtr gameObjectPtr, Transform* newParent);
 
     // 子の数を取得
-    size_t getChildCount() const { return children.size(); }
+    size_t childCount() const { return children.size(); }
 
     // 子を取得
     Transform* GetChild(size_t index) const;
@@ -148,6 +148,8 @@ private:
     mutable bool m_dirty = true;
     mutable Matrix m_localMatrix = Matrix::Identity;
     mutable Matrix m_worldMatrix = Matrix::Identity;
+
+    bool dirtyInHierarchy() const { return m_dirty || parent && parent->dirtyInHierarchy(); }
 
     Vector3 _localPosition{ 0,0,0 };
     Quaternion _localRotation = Quaternion::Identity;

@@ -6,6 +6,7 @@
 #include "Property.h"
 #include "Singleton.h"
 #include "Bounds.h"
+#include "Collision.h"
 
 namespace UniDx
 {
@@ -66,9 +67,17 @@ public:
     Collider* getCollider() const { return collider_; }
     bool isValid() const { return collider_ != nullptr; }
     void setInvalid() { collider_ = nullptr; }
+    void initOtherNew() { othersNew_.clear(); collisionsNew_.clear(); }
+    void addCollide(const Collision& col) { collisionsNew_.push_back(col); }
+    void addTrigger(Collider* other) { othersNew_.push_back(other); }
+    void collideCallback();
 
 private:
     Collider* collider_;
+    std::vector<Collision> collisions_;
+    std::vector<Collision> collisionsNew_;
+    std::vector<Collider*> others_;
+    std::vector<Collider*> othersNew_;
 };
 
 
@@ -94,6 +103,7 @@ private:
         PhysicsShape* b;
     };
     std::vector<PotentialPair> potentialPairs;
+    std::vector<PotentialPair> potentialPairsTrigger;
 
     std::vector<ContactManifold> manifolds;
 

@@ -87,6 +87,10 @@ Transform* Transform::GetChild(size_t index) const
 // 行列を更新
 void Transform::updateMatrices() const
 {
+    if (parent) {
+        parent->updateMatrices();
+    }
+
     if (m_dirty)
     {
         m_localMatrix = Matrix::CreateScale(_localScale)
@@ -100,6 +104,12 @@ void Transform::updateMatrices() const
             m_worldMatrix = m_localMatrix;
         }
         m_dirty = false;
+
+        // 親の行列が変わったので、子も変わるように
+        for (auto& c : children)
+        {
+            c->transform->m_dirty = true;
+        }
     }
 }
 
