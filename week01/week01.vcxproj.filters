@@ -384,6 +384,9 @@
     <Image Include="Resource\wood-2.png">
       <Filter>リソース ファイル</Filter>
     </Image>
+    <Image Include="Resource\space_frigate.png">
+      <Filter>リソース ファイル</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\UniDx\SpriteShader.hlsl">
@@ -416,6 +419,9 @@
       <Filter>リソース ファイル</Filter>
     </None>
     <None Include="Resource\ModularCharacterPBR.glb">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="Resource\space_frigate_0.glb">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>

@@ -31,21 +31,28 @@ unique_ptr<Scene> CreateDefaultScene()
         make_unique<SphereCollider>()
         );
     auto model = player->GetComponent<GltfModel>(true);
-    model->load<VertexPNT>(L"Resource/ModularCharacterPBR.glb");
+    model->load<VertexPNT>(
+        L"Resource/ModularCharacterPBR.glb",
+        L"Resource/AlbedoShade.hlsl",
+        L"Resource/Albedo.png");
 
-    player->transform->position = player->transform->position + Vector3(0,1,0);
+    player->transform->localPosition = Vector3(0,1,0);
     player->transform->localRotation = Quaternion::CreateFromYawPitchRoll(XM_PI, 0, 0);
 
-    // マテリアルをシェーダーを読み込んで初期化
-    auto material = make_shared<Material>();
-    material->shader.compile<VertexPNT>(L"Resource/AlbedoShade.hlsl");
+    // -- 戦闘機--
+    auto fighter = make_unique<GameObject>(L"自機",
+        make_unique<GltfModel>(),
+        make_unique<Rigidbody>(),
+        make_unique<SphereCollider>()
+    );
+    auto modelFighter = fighter->GetComponent<GltfModel>(true);
+    modelFighter->load<VertexPNT>(
+        L"Resource/space_frigate_0.glb",
+        L"Resource/AlbedoShade.hlsl",
+        L"Resource/space_frigate.png");
 
-    // テクスチャを読み込んでマテリアルに追加
-    auto t = make_unique<Texture>();
-    t->load(L"Resource/Albedo.png");
-    material->addTexture(move(t));
-
-    model->addMaterial(material);
+    fighter->transform->localPosition = Vector3(-2, 2, 0);
+    fighter->GetComponent<Rigidbody>(true)->gravityScale = 0;   // 飛ぶために重力0
 
     // キューブレンダラを作ってサイズを調整
     auto rb = make_unique<Rigidbody>();
@@ -72,6 +79,7 @@ unique_ptr<Scene> CreateDefaultScene()
 
         make_unique<GameObject>(L"オブジェクトルート",
             move(player),
+            move(fighter),
             move(floor)
         ),
 

@@ -13,7 +13,28 @@ namespace UniDx {
 class GltfModel : public Component
 {
 public:
-    // 画像ファイルを読み込む
+    // glTF形式のモデルファイルを読み込む
+    template<typename TVertex>
+    bool load(const std::wstring& modelPath, const std::wstring& shaderPath, const std::wstring& texturePath)
+    {
+        // モデル
+        if (!load<TVertex>(modelPath)) return false;
+
+        // マテリアルとシェーダー
+        auto material = std::make_shared<Material>();
+        if(! material->shader.compile<TVertex>(shaderPath)) return false;
+
+        // テクスチャ
+        auto tex = std::make_unique<Texture>();
+        SetAddressModeUV(tex.get(), 0);     // モデルで指定されたラップモード
+        if(! tex->load(texturePath)) return false;
+        material->addTexture(move(tex));
+
+        addMaterial(material);
+        return true;
+    }
+
+    // glTF形式のモデルファイルを読み込む
     template<typename TVertex>
     bool load(const std::wstring& filePath)
     {
@@ -36,6 +57,9 @@ public:
             r->addMaterial(material);
         }
     }
+
+    // Textureのラップモードをこのモデルの指定インデクスのテクスチャ設定に合わせる
+    void SetAddressModeUV(Texture* texture, int texIndex) const;
 
 protected:
     std::vector<MeshRenderer*> renderer;

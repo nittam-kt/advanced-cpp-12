@@ -249,6 +249,7 @@
     <Image Include="Resource\brick-2.png" />
     <Image Include="Resource\floor.png" />
     <Image Include="Resource\gradation.png" />
+    <Image Include="Resource\space_frigate.png" />
     <Image Include="Resource\wall-1.png" />
     <Image Include="Resource\wall-2.png" />
     <Image Include="Resource\wood-1.png" />
@@ -284,6 +285,7 @@
     <None Include="Resource\M PLUS 1.spritefont" />
     <None Include="Resource\ModularCharacter.glb" />
     <None Include="Resource\ModularCharacterPBR.glb" />
+    <None Include="Resource\space_frigate_0.glb" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\DirectXTex\debug_lib\DirectXTex.lib" />

@@ -18,7 +18,9 @@ class Camera;
 class Texture : public Object
 {
 public:
-    Texture() : Object([this]() {return fileName;})
+    Texture() : Object([this]() {return fileName; }),
+        wrapModeU(D3D11_TEXTURE_ADDRESS_CLAMP),
+        wrapModeV(D3D11_TEXTURE_ADDRESS_CLAMP)
     {
     }
 
@@ -26,6 +28,9 @@ public:
     bool load(const std::wstring& filePath);
 
     void setForRender() const;
+
+    D3D11_TEXTURE_ADDRESS_MODE wrapModeU;
+    D3D11_TEXTURE_ADDRESS_MODE wrapModeV;
 
 protected:
     ComPtr<ID3D11SamplerState> samplerState;

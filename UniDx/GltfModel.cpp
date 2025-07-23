@@ -194,6 +194,25 @@ bool GltfModel::load_(const wstring& filePath)
                 sub->resizeUV(accessor.count);
                 ReadAccessorData(*model, accessor, const_cast<vector<Vector2>&>(sub->mutableUV()));
             }
+            // TEXCOORD_1
+            if (auto it = primitive.attributes.find("TEXCOORD_1"); it != primitive.attributes.end()) {
+                const auto& accessor = model->accessors[it->second];
+                sub->resizeUV2(accessor.count);
+                ReadAccessorData(*model, accessor, const_cast<vector<Vector2>&>(sub->mutableUV2()));
+            }
+            // TEXCOORD_2
+            if (auto it = primitive.attributes.find("TEXCOORD_2"); it != primitive.attributes.end()) {
+                const auto& accessor = model->accessors[it->second];
+                sub->resizeUV3(accessor.count);
+                ReadAccessorData(*model, accessor, const_cast<vector<Vector2>&>(sub->mutableUV3()));
+            }
+            // TEXCOORD_3
+            if (auto it = primitive.attributes.find("TEXCOORD_3"); it != primitive.attributes.end()) {
+                const auto& accessor = model->accessors[it->second];
+                sub->resizeUV4(accessor.count);
+                ReadAccessorData(*model, accessor, const_cast<vector<Vector2>&>(sub->mutableUV4()));
+            }
+
             // indices
             if (primitive.indices >= 0) {
                 const auto& accessor = model->accessors[primitive.indices];
@@ -228,7 +247,7 @@ bool GltfModel::load_(const wstring& filePath)
         }
     }
 
-    // ノードから姿勢を取得。TODO:階層構造を作る
+    // ノードから階層構造を作りながら姿勢を取得
     int sceneIndex = model->defaultScene >= 0 ? model->defaultScene : 0;
     const auto& scene = model->scenes[sceneIndex];
     for (int nodeIndex : scene.nodes)
@@ -236,6 +255,40 @@ bool GltfModel::load_(const wstring& filePath)
         createNodeRecursive(*model.get(), nodeIndex, gameObject);
     }
     return true;
+}
+
+
+// -----------------------------------------------------------------------------
+// Textureのラップモードをこのモデルの指定インデクスのテクスチャ設定に合わせる
+// -----------------------------------------------------------------------------
+void GltfModel::SetAddressModeUV(Texture* texture, int texIndex) const
+{
+    const tinygltf::Texture& tex = model->textures[texIndex];
+
+    int samplerIndex = tex.sampler; // -1 の場合あり
+    tinygltf::Sampler sampler;
+    if (samplerIndex >= 0 && samplerIndex < model->samplers.size()) {
+        sampler = model->samplers[samplerIndex];
+    }
+    else {
+        // デフォルト扱い
+        sampler.wrapS = 10497; // REPEAT
+        sampler.wrapT = 10497; // REPEAT
+        sampler.magFilter = -1; // 未指定
+        sampler.minFilter = -1; // 未指定
+    }
+
+    // 例: DirectX のアドレッシングモードへマッピング
+    auto ToDXAddr = [](int wrap) {
+        switch (wrap) {
+        case 10497: return D3D11_TEXTURE_ADDRESS_WRAP;   // GL_REPEAT
+        case 33648: return D3D11_TEXTURE_ADDRESS_MIRROR; // GL_MIRRORED_REPEAT
+        case 33071: return D3D11_TEXTURE_ADDRESS_CLAMP;  // GL_CLAMP_TO_EDGE
+        default:    return D3D11_TEXTURE_ADDRESS_WRAP;
+        }
+    };
+    texture->wrapModeU = ToDXAddr(sampler.wrapS);
+    texture->wrapModeV = ToDXAddr(sampler.wrapT);
 }
 
 }
